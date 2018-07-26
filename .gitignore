@@ -1,6 +1,4 @@
 E3T/bin
 E3T/Dependencies
-E3T/.vs/E3T/v15/ipch/AutoPCH
-E3T/.vs/E3T/v15/ipch
-E3T/.vs/E3T/v15/Browse.VC.db
+E3T/.vs
 E3T/E3T/src/glad.c

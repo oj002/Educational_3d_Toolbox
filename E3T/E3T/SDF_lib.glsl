@@ -181,14 +181,31 @@ float opU(float d1, int m1, float d2, int m2, out int m)
         return d2;
     }
 }
-float opSU(float d1, float d2, float k = 32)
+float opCombine(float d1, float d2, float r)
 {
-    return -log(max(0.0001, exp(-k * d1) + exp(-k * d2))) / k;
+    float minimum = min(d1, d2);
+    if((d1 < r) && (d2 < r))
+    {
+        return min(minimum, r - sqrt((r-d1)*(r-d1) + (r-d2)*(r-d2)));
+    }
+    else {
+        return minimum;
+    }
 }
-float opSU(float d1, int m1, float d2, int m2, out int m, float k = 32)
+float opCombine(float d1, int m1, float d2, int m2, out int m, float r)
 {
     m = (d1  < d2 ? m1 : m2);
-    return -log(max(0.0001, exp(-k * d1) + exp(-k * d2))) / k;
+    float minimum = min(d1, d2);
+    if((d1 < r) && (d2 < r))
+    {
+        return min(minimum, r - sqrt((r-d1)*(r-d1) + (r-d2)*(r-d2)));
+    }
+    else {
+        return minimum;
+    }
 }
 float opD(float d1, float d2) { return max(d1, -d2); }
 
+float fOpUnionChamfer(float a, float b, float r) {
+	return min(min(a, b), (a - r + b)*sqrt(0.5));
+}

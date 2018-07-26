@@ -16,7 +16,7 @@ enum class CamMovement
 
 static const float YAW = 90.0f;
 static const float PITCH = 0.0f;
-static const float SPEED = 3.5f;
+static const float SPEED = 4.0f;
 static const float SENSITIVTY = 0.05f;
 
 class Cam

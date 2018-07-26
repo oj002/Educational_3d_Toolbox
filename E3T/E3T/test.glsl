@@ -27,6 +27,12 @@ const float epsilon = 0.0001;
 
 float SD_Scene(vec3 p, out int material)
 {
+/*	float box = SD_Box(p, vec3(0.1, 0.9, 0.4));
+	float cylinder = SD_Cylinder(p.yxz, vec2(0.1, 0.3));
+	float dist = opCombine(cylinder, box, 0.02);
+		
+	return opU(SD_yPlane(p), M_FLOOR, dist, M_SPHERE, material);
+*/
 	float dist = 
 		opU(SD_yPlane(p), M_FLOOR, SD_Sphere(	p-vec3( 0.0,-0.75, 0.0), 0.25), 						M_SPHERE, material);
 	dist = opU(dist, material, SD_Box(			p-vec3( 1.0,-0.75, 0.0), vec3(0.25)), 					M_BOX, material);
@@ -169,6 +175,7 @@ vec3 render(vec3 eye, vec3 dir)
 		vec3 norm = getNormal(pos);
         vec3 ref = reflect(dir, norm);
 
+		
 		switch (material)
 		{
 		case M_FLOOR:
@@ -182,6 +189,7 @@ vec3 render(vec3 eye, vec3 dir)
 		case M_CYLINDER:		col = vec3(1.0, 0.0, 1.0); break;
 		case M_CONE:			col = vec3(0.5, 1.0, 0.0); break;
 		case M_PRYAMID_CONE: 	col = vec3(0.0, 1.0, 0.5); break;
+		default: col = vec3(1.0);
 		}
 		float occ = calcAmbientOcclusio(pos, norm);
 		const vec3 lightPos = normalize(vec3(-0.4, 0.7, -0.6));
@@ -224,23 +232,4 @@ void main()
 	col = pow(col, vec3(0.4545));
 	fragColor = vec4(col, 1.0);
 }
-
-	/*float totalDist = 0.0;
-	for(int i = 0; i < MaxStep; ++i)
-	{
-		vec3 pos = eye + dir * totalDist;
-        float dist = SD_Scene(pos);
-		if(totalDist > MaxDist) break;
-        if(dist < Epsilon * totalDist * 2.0)
-        {
-			vec3 norm = getNormal(pos);
-			vec3 phong = phong(norm, dir);
-
-            float fog_alpha = min(totalDist*totalDist, MaxDistSq) / MaxDistSq;
-			fragColor = vec4(fragColor.rgb * fog_alpha + phong * (1.0 - fog_alpha), 1.0f);
-            break;
-        }
-
-        totalDist += dist;
-	}*/
 
