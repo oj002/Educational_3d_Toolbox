@@ -1,5 +1,7 @@
 # E3T
-
+## License
+This project is licensed under the [WTFPL](LICENSE.md) license.\
+![](http://www.wtfpl.net/wp-content/uploads/2012/12/wtfpl.svg)
 
 ## Implementation
 The code should be written in crossplatform C/C++ code(Windows and Linux).
