@@ -11,7 +11,7 @@
 
 namespace E3T
 {
-	extern void init_glfw();
-	extern void init_glad();
-	extern GLFWwindow* createWindow(int width, int height, const char *name, int samples = 1);
+	extern void init_glfw() noexcept;
+	extern void init_glad() noexcept;
+	extern GLFWwindow* createWindow(int width, int height, const char *name, int samples = 1) noexcept;
 }

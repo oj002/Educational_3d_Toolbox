@@ -6,22 +6,10 @@ namespace E3T
 	Shader::Shader(const char *libPath)
 		: m_rendererID(0)
 	{
-		m_vs = CompileShader(GL_VERTEX_SHADER,
-R"(
-#version 400 core
-layout (location = 0) in vec2 aPos;
-out vec2 fragPos;
-
-void main()
-{
-	fragPos = aPos;
-	gl_Position = vec4(aPos, 0.0, 1.0);
-}
-)"
-		);
+		m_vs = CompileShader(GL_VERTEX_SHADER,"#version 400 core\nlayout(location=0)in vec2 aPos;out vec2 fragPos;void main(){fragPos=aPos;gl_Position=vec4(aPos,0.0,1.0);}");
 		std::ifstream fin(libPath);
 		std::string lib_str((std::istreambuf_iterator<char>(fin)), std::istreambuf_iterator<char>());
-		m_sdfLibFs = CompileShader(GL_FRAGMENT_SHADER, lib_str);
+		m_libFs = CompileShader(GL_FRAGMENT_SHADER, lib_str);
 
 		int brackets = 0;
 		for(std::string::iterator it = lib_str.begin(); it != lib_str.end(); ++it)
@@ -61,7 +49,7 @@ void main()
 			}
 			case '\n': case '\r': case '\v': break;
 			case '{': ++brackets; break;
-			case '}': 
+			case '}':
 				--brackets;
 				if (brackets == 0) { forward_declare += ';'; }
 				else if (brackets < 0) { std::cerr << "Unopened braked closed!" << std::endl; }
@@ -75,25 +63,13 @@ void main()
 				break;
 			}
 		}
-
-		CreateShader(
-R"(
-#version 400 core
-in vec2 fragPos;
-out vec4 fragColor;
-void main()
-{
-	fragColor = vec4(0.0,0.0,0.0,1.0);
-}
-)"
-		);
-
+		CreateShader("#version 400 core\nin vec2 fragPos;out vec4 fragColor;void main(){fragColor=vec4(0.0,0.0,0.0,1.0);}");
 	}
 
 	void Shader::update(const char *filepath)
 	{
 		static long long lastTimeModified{ 0 };
-		fs::file_time_type time{ fs::last_write_time(fs::current_path().append(filepath)) };
+		const fs::file_time_type time{ fs::last_write_time(fs::current_path().append(filepath)) };
 		if (lastTimeModified < time.time_since_epoch().count())
 		{
 			lastTimeModified = time.time_since_epoch().count();
@@ -128,7 +104,7 @@ void main()
 
 	unsigned int Shader::CompileShader(unsigned int type, const std::string & sourc)
 	{
-		GLCall(unsigned int id = glCreateShader(type));
+		GLCall(const unsigned int id = glCreateShader(type));
 		const char* src = sourc.c_str();
 		GLCall(glShaderSource(id, 1, &src, nullptr));
 		GLCall(glCompileShader(id));
@@ -151,12 +127,12 @@ void main()
 
 	void Shader::CreateShader(const std::string &fragmentShader)
 	{
-		unsigned int fs = CompileShader(GL_FRAGMENT_SHADER, fragmentShader);
+		const unsigned int fs = CompileShader(GL_FRAGMENT_SHADER, fragmentShader);
 		GLCall(m_rendererID = glCreateProgram());
 
 
 		GLCall(glAttachShader(m_rendererID, m_vs));
-		GLCall(glAttachShader(m_rendererID, m_sdfLibFs));
+		GLCall(glAttachShader(m_rendererID, m_libFs));
 		GLCall(glAttachShader(m_rendererID, fs));
 		GLCall(glLinkProgram(m_rendererID));
 		GLCall(glValidateProgram(m_rendererID));

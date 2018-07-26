@@ -2,12 +2,12 @@
 
 namespace E3T
 {
-	static void error_callback(int error, const char* description)
+	static void error_callback(int error, const char* description) noexcept
 	{
 		fprintf(stderr, "Error(%d): %s\n", error, description);
 		__debugbreak();
 	}
-	void init_glfw()
+	void init_glfw() noexcept
 	{
 		if (!glfwInit())
 		{
@@ -16,7 +16,7 @@ namespace E3T
 		glfwSetErrorCallback(error_callback);
 		std::atexit(glfwTerminate);
 	}
-	void init_glad()
+	void init_glad() noexcept
 	{
 		if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
 		{
@@ -24,7 +24,7 @@ namespace E3T
 		}
 		glEnable(GL_MULTISAMPLE);
 	}
-	GLFWwindow* createWindow(int width, int height, const char *name, int samples)
+	GLFWwindow* createWindow(int width, int height, const char *name, int samples) noexcept
 	{
 		if (samples > 1) { glfwWindowHint(GLFW_SAMPLES, samples); }
 		glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);

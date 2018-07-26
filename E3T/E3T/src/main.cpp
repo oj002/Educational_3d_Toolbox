@@ -9,7 +9,7 @@ float dt = 0.0f;
 
 void processInput(GLFWwindow *pWindow);
 void mouse_callback(GLFWwindow * window, double xpos, double ypos);
-void window_size_callback(GLFWwindow* window, int w, int h);
+void window_size_callback(GLFWwindow* window, int w, int h) noexcept;
 
 int main()
 {
@@ -76,7 +76,7 @@ int main()
 		glfwSwapBuffers(pWindow);
 		glfwPollEvents();
 		++fps;
-		shader.update("test.glsl");
+		shader.update("main.glsl");
 		if (fpsTimer.getElapsedTime<float>() > 1.0f)
 		{
 			glfwSetWindowTitle(pWindow, ("E3T     FPS: " + std::to_string(fps)).c_str());
@@ -142,20 +142,20 @@ void mouse_callback(GLFWwindow *window, double xpos, double ypos)
 {
 	if (firstMouse)
 	{
-		lastX = (float)xpos;
-		lastY = (float)ypos;
+		lastX = static_cast<float>(xpos);
+		lastY = static_cast<float>(ypos);
 		firstMouse = false;
 	}
 
-	float xoffset = (float)xpos - lastX;
-	float yoffset = lastY - (float)ypos;
+	const float xoffset = static_cast<float>(xpos) - lastX;
+	const float yoffset = lastY - static_cast<float>(ypos);
 
-	lastX = (float)xpos;
-	lastY = (float)ypos;
+	lastX = (static_cast<float>(xpos));
+	lastY = (static_cast<float>(ypos));
 
 	cam.processMouseMovement(xoffset, yoffset);
 }
-void window_size_callback(GLFWwindow* window, int w, int h)
+void window_size_callback(GLFWwindow* window, int w, int h) noexcept
 {
 	width = w; height = h;
 	glViewport(0, 0, width, height);

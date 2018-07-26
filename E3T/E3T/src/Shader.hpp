@@ -26,8 +26,8 @@ namespace E3T
 		~Shader() { GLCall(glDeleteProgram(m_rendererID)); }
 
 
-		void bind() const { GLCall(glUseProgram(m_rendererID)); }
-		void unbind() const { GLCall(glUseProgram(0)); }
+		void bind() const noexcept { GLCall(glUseProgram(m_rendererID)); }
+		void unbind() const noexcept { GLCall(glUseProgram(0)); }
 
 		void setFloat(const std::string& name, float v) { GLCall(glUniform1f(getUniformLocation(name), v)); }
 		void setInt(const std::string& name, int v) { GLCall(glUniform1i(getUniformLocation(name), v)); }
@@ -47,7 +47,7 @@ namespace E3T
 	private:
 		std::string forward_declare;
 		unsigned int m_rendererID;
-		unsigned int m_vs, m_sdfLibFs;
+		unsigned int m_vs, m_libFs;
 		std::unordered_map<std::string, int> m_uniformLocationCache;
 	};
 }

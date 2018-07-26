@@ -5,14 +5,14 @@ namespace E3T
 	class Timer
 	{
 	public:
-		Timer()
+		Timer() noexcept
 			:m_start(std::chrono::steady_clock::now())
 		{
 
 		}
 
 		template<typename T>
-		T restart()
+		T restart() noexcept
 		{
 			const std::chrono::steady_clock::time_point old = m_start;
 			m_start = std::chrono::steady_clock::now();
@@ -20,13 +20,13 @@ namespace E3T
 			return elapsedTime.count();
 		}
 
-		void restart()
+		void restart() noexcept
 		{
 			m_start = std::chrono::steady_clock::now();
 		}
 
 		template<typename T>
-		T getElapsedTime()
+		T getElapsedTime() noexcept
 		{
 			const std::chrono::duration<T> elapsedTime = std::chrono::steady_clock::now() - m_start;
 			return elapsedTime.count();

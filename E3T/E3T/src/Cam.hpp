@@ -3,6 +3,7 @@
 #include <glad/glad.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <cmath>
 
 #include <vector>
 
@@ -22,40 +23,30 @@ static const float SENSITIVTY = 0.05f;
 class Cam
 {
 public:
-	Cam(glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f), float yaw = YAW, float pitch = PITCH)
-		: front(glm::vec3(0.0f, 0.0f, -1.0f))
+	Cam(glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f), float yaw = YAW, float pitch = PITCH) noexcept
+		: front(0.0f, 0.0f, -1.0f)
 		, movementSpeed(SPEED)
 		, mouseSensitivity(SENSITIVTY)
+		, position(position)
+		, worldUp(up)
+		, yaw(yaw)
+		, pitch(pitch)
+		, right(0.0f)
+		, up(0.0f)
 	{
-		this->position = position;
-		this->worldUp = up;
-		this->yaw = yaw;
-		this->pitch = pitch;
-		updateVectors();
-	}
-
-	Cam(float posX, float posY, float posZ, float upX, float upY, float upZ, float yaw, float pitch)
-		: front(glm::vec3(0.0f, 0.0f, -1.0f))
-		, movementSpeed(SPEED)
-		, mouseSensitivity(SENSITIVTY)
-	{
-		this->position = glm::vec3(posX, posY, posZ);
-		this->worldUp = glm::vec3(upX, upY, upZ);
-		this->yaw = yaw;
-		this->pitch = pitch;
 		updateVectors();
 	}
 
 	void processKeyboard(CamMovement direction, float deltaTime)
 	{
-		float velocity = this->movementSpeed * deltaTime;
+		const float velocity{ this->movementSpeed * deltaTime };
 		if (direction == CamMovement::FORWARD) { this->position -= this->front * velocity; }
 		if (direction == CamMovement::BACKWARD) { this->position += this->front * velocity; }
 		if (direction == CamMovement::LEFT) { this->position += this->right * velocity; }
 		if (direction == CamMovement::RIGHT) { this->position -= this->right * velocity; }
 	}
 
-	void processMouseMovement(float xOffset, float yOffset, bool constrainPitch = true)
+	void processMouseMovement(float xOffset, float yOffset, bool constrainPitch = true) noexcept
 	{
 		xOffset *= this->mouseSensitivity;
 		yOffset *= this->mouseSensitivity;
@@ -76,9 +67,9 @@ private:
 	void updateVectors()
 	{
 		glm::vec3 newFront;
-		newFront.x = cos(glm::radians(this->yaw)) * cos(glm::radians(this->pitch));
-		newFront.y = sin(glm::radians(this->pitch));
-		newFront.z = sin(glm::radians(this->yaw)) * cos(glm::radians(this->pitch));
+		newFront.x = std::cos(glm::radians(this->yaw)) * cos(glm::radians(this->pitch));
+		newFront.y = std::sin(glm::radians(this->pitch));
+		newFront.z = std::sin(glm::radians(this->yaw)) * cos(glm::radians(this->pitch));
 		this->front = newFront;
 
 		this->right = glm::normalize(glm::cross(this->front, this->worldUp));
