@@ -49,7 +49,7 @@ int main()
 	glEnableVertexAttribArray(0);
 
 
-	E3T::Shader shader("SDF_lib.glsl");
+	E3T::Shader shader;
 	shader.bind();
 
 	E3T::Timer fpsTimer;

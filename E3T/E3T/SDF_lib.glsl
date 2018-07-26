@@ -118,7 +118,6 @@ float UD_RoundBox(vec3 p, vec3 size, float r)
 {
     return length(max(abs(p) - size, 0.0)) - r;
 }
-
 /////////////////
 //  Operators  //
 /////////////////
@@ -205,7 +204,3 @@ float opCombine(float d1, int m1, float d2, int m2, out int m, float r)
     }
 }
 float opD(float d1, float d2) { return max(d1, -d2); }
-
-float fOpUnionChamfer(float a, float b, float r) {
-	return min(min(a, b), (a - r + b)*sqrt(0.5));
-}

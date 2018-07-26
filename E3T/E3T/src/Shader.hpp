@@ -8,6 +8,7 @@
 #include "Macros.hpp"
 #include <glad\glad.h>
 
+#include <map>
 #include <unordered_map>
 #include <glm\glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
@@ -22,7 +23,7 @@ namespace E3T
 	class Shader
 	{
 	public:
-		Shader(const char *libPath);
+		Shader();
 		~Shader() { GLCall(glDeleteProgram(m_rendererID)); }
 
 
@@ -39,15 +40,23 @@ namespace E3T
 
 		void update(const char *filepath);
 	private:
+		std::string PaseLib(const char *libPath);
 		std::string PaseShader(const char *filePath);
 		unsigned int CompileShader(unsigned int type, const std::string& sourc);
 		void CreateShader(const std::string& fragmentShader);
 		int getUniformLocation(const std::string& name);
 
+		struct Library
+		{
+			unsigned int id;
+			std::string forward_declare;
+			long long lastWriteTime;
+		};
+
 	private:
-		std::string forward_declare;
 		unsigned int m_rendererID;
-		unsigned int m_vs, m_libFs;
+		unsigned int m_vs;
+		std::map<std::string, Library> m_libs;
 		std::unordered_map<std::string, int> m_uniformLocationCache;
 	};
 }
