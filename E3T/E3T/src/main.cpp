@@ -1,7 +1,5 @@
 #include "Core.hpp"
-#include <glad/glad.h>
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
+
 int width = 800, height = 600;
 
 Cam cam(glm::vec3(0.0f, 0.0f, 3.0f));
@@ -13,17 +11,18 @@ void window_size_callback(GLFWwindow* window, int w, int h) noexcept;
 
 int main()
 {
+{
 	E3T::init_glfw();
 
+
 	GLFWwindow* pWindow{ E3T::createWindow(width, height, "G3T") };
-	glfwSetInputMode(pWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	//glfwSetInputMode(pWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 	glfwMakeContextCurrent(pWindow);
 	glfwSetWindowSizeCallback(pWindow, window_size_callback);
 	glfwSetCursorPosCallback(pWindow, mouse_callback);
 
 	E3T::init_glad();
 	glViewport(0, 0, width, height);
-
 
 
 	// One big triangle that covers the howl screen
@@ -49,21 +48,23 @@ int main()
 	glEnableVertexAttribArray(0);
 
 
+	E3T::init_imgui(pWindow);
+
 	E3T::Shader shader;
 	shader.bind();
 
-	E3T::Timer fpsTimer;
-	size_t fps{ 0 };
 	E3T::Timer timer;
 	E3T::Timer dtTimer;
 	while (!glfwWindowShouldClose(pWindow))
 	{
 		dt = dtTimer.restart<float>();
 
-		processInput(pWindow);
+		ImGui_ImplOpenGL3_NewFrame();
+		ImGui_ImplGlfw_NewFrame();
+		ImGui::NewFrame();
+
 
 		GLCall(glClear(GL_COLOR_BUFFER_BIT));
-
 
 		shader.setVec3("camUp", cam.up);
 		shader.setVec3("camRight", cam.right);
@@ -71,19 +72,24 @@ int main()
 		shader.setFloat("time", timer.getElapsedTime<float>());
 		shader.setFloat("dt", dt);
 		shader.setVec2("resolution", { width, height });
-
 		glDrawArrays(GL_TRIANGLES, 0, 3);
+
+
+
+
+		ImGui::ShowDemoWindow();
+
+		ImGui::Render();
+		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
 		glfwSwapBuffers(pWindow);
+		processInput(pWindow);
 		glfwPollEvents();
-		++fps;
 		shader.update("main.glsl");
-		if (fpsTimer.getElapsedTime<float>() > 1.0f)
-		{
-			glfwSetWindowTitle(pWindow, ("E3T     FPS: " + std::to_string(fps)).c_str());
-			fpsTimer.restart();
-			fps = 0;
-		}
 	}
+}
+
+	E3T::shutdown();
 	return 0;
 }
 

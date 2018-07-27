@@ -1,12 +1,10 @@
 #pragma once
 #include <iostream>
 #include <string>
-#include <intrin.h>
+
+#define FATA_ERROR(errorMsg) std::cerr << "[Error] (" << errorMsg << "):\n" << __FILE__ << ':' << __LINE__ << std::endl; std::exit(-1)
 
 #ifdef _DEBUG
-#define DEBUG_ASSERT(x) if (!(x)) { __debugbreak(); }
-#define DEBUG_ERROR(errorCode) std::cerr << "[Error] (" << errorCode << "): \n" << __FILE__ << ':' << __LINE__ << std::endl; __debugbreak()
-#define DEBUG_FATA_ERROR(errorCode) DEBUG_ERROR(errorCode); std::exit(-1)
 #define GLCall(x) \
 while (glGetError()){}\
 x;\
@@ -25,14 +23,10 @@ if(true)\
 			case GL_INVALID_FRAMEBUFFER_OPERATION:	errorMsg = "INVALID_FRAMEBUFFER_OPERATION"; break;\
 			default:								errorMsg = std::to_string(errorCode); break;\
 		}\
-		std::cerr << "[OpenGL Error] (" << errorMsg << "): " << #x << " " << __FILE__ << ':' << __LINE__ << '\n'; \
+		std::cerr << "[OpenGL Error] (" << errorMsg << ") " << #x << ":\n" << __FILE__ << ':' << __LINE__ << std::endl; \
 		error = true; \
 	}\
-	if (error) { __debugbreak(); }\
 }
 #else
-#define DEBUG_ASSERT(x)
-#define DEBUG_ERROR(errorCode)
-#define DEBUG_FATA_ERROR(errorCode)
 #define GLCall(x) x
 #endif

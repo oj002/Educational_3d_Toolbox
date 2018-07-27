@@ -88,7 +88,7 @@ namespace E3T
 		std::ifstream fin(filePath);
 		if (!fin.is_open())
 		{
-			DEBUG_ERROR("Warning: shader '" << filePath << "' doesn't exist\n");
+			std::cerr << "Warning: shader '" << filePath << "' doesn't exist\n";
 		}
 
 		std::string line;
@@ -126,7 +126,7 @@ namespace E3T
 			GLCall(glGetShaderiv(id, GL_INFO_LOG_LENGTH, &lenght));
 			char* message = (char*)alloca(lenght * sizeof(char));
 			GLCall(glGetShaderInfoLog(id, lenght, &lenght, message));
-			std::cout << "Failed to compile Shader: " << message << std::endl;
+			std::cerr << "Failed to compile Shader: " << message << std::endl;
 			GLCall(glDeleteShader(id));
 			return 0;
 		}
@@ -160,10 +160,6 @@ namespace E3T
 			return m_uniformLocationCache[name];
 		}
 		GLCall(int location = glGetUniformLocation(m_rendererID, name.c_str()));
-		if (location == -1)
-		{
-			std::cout << "Warning: uniform '" << name << "' doesn't exist\n";
-		}
 
 		m_uniformLocationCache[name] = location;
 		return location;

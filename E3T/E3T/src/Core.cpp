@@ -11,22 +11,26 @@ namespace E3T
 	{
 		if (!glfwInit())
 		{
-			DEBUG_FATA_ERROR("Failed to initialize GLFW");
+			FATA_ERROR("Failed to initialize GLFW");
 		}
 		glfwSetErrorCallback(error_callback);
-		std::atexit(glfwTerminate);
 	}
 	void init_glad() noexcept
 	{
 		if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
 		{
-			DEBUG_FATA_ERROR("Failed to initialize GLAD");
+			FATA_ERROR("Failed to initialize GLAD");
 		}
-		glEnable(GL_MULTISAMPLE);
 	}
-	GLFWwindow* createWindow(int width, int height, const char *name, int samples) noexcept
+	void init_imgui(GLFWwindow *pWindow) noexcept
 	{
-		if (samples > 1) { glfwWindowHint(GLFW_SAMPLES, samples); }
+		ImGui::CreateContext();
+		ImGui_ImplGlfw_InitForOpenGL(pWindow, true);
+		ImGui_ImplOpenGL3_Init();
+		ImGui::StyleColorsClassic();
+	}
+	GLFWwindow* createWindow(int width, int height, const char *name) noexcept
+	{
 		glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 		glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 		glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GLFW_TRUE);
@@ -34,8 +38,15 @@ namespace E3T
 
 		if (!pWindow)
 		{
-			DEBUG_FATA_ERROR("Failed to create GLFWWindow");
+			FATA_ERROR("Failed to create GLFWWindow");
 		}
 		return pWindow;
+	}
+	void shutdown()
+	{
+		ImGui_ImplOpenGL3_Shutdown();
+		ImGui_ImplGlfw_Shutdown();
+		ImGui::DestroyContext();
+		glfwTerminate();
 	}
 }

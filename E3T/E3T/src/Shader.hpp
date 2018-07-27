@@ -12,8 +12,9 @@
 #include <unordered_map>
 #include <glm\glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
-#include <fstream>
-#include <regex>
+#include <imgui\imgui.h>
+#include <imgui\imgui_impl_glfw.h>
+#include <imgui\imgui_impl_opengl3.h>
 
 #include <experimental\filesystem>
 namespace fs = std::experimental::filesystem;

@@ -68,7 +68,8 @@ float SD_Scene(vec3 p, out int material)
 	
 	vec3 q = p * rotateX(time / 3.0) * rotateY(time / 5.0);
 	float holowBox = opD(SD_Box(q, vec3(0.5)), SD_Sphere(q, (sin(time) + 1.5) / 2.0));
-	return opU(plane, M_FLOOR, opU(holowBox, SD_Torus(p * rotateX(time), vec2(0.25, 0.1))), M_OBJ, material);*/
+	return opU(plane, M_FLOOR, opU(holowBox, M_BOX, SD_Torus(p * rotateX(time), vec2(0.25, 0.1)), M_TORUS, material), material, material);
+*/
 }
 float castRay(vec3 eye, vec3 dir, out int material = M_NONE)
 {

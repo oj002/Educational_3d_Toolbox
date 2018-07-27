@@ -5,13 +5,13 @@
 #include "Cam.hpp"
 #include <glad\glad.h>
 #include <GLFW\glfw3.h>
-#include <iostream>
-#include <cassert>
-#include <intrin.h>
+#include <glad/glad.h>
 
 namespace E3T
 {
 	extern void init_glfw() noexcept;
 	extern void init_glad() noexcept;
-	extern GLFWwindow* createWindow(int width, int height, const char *name, int samples = 1) noexcept;
+	void init_imgui(GLFWwindow *pWindow) noexcept;
+	extern GLFWwindow* createWindow(int width, int height, const char *name) noexcept;
+	void shutdown();
 }
