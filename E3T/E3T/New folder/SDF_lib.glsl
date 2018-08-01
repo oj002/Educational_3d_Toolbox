@@ -1,3 +1,4 @@
+#version 400 core
 float length2(vec2 p)
 {
 	return sqrt( p.x*p.x + p.y*p.y );
@@ -12,6 +13,8 @@ float length8(vec2 p)
 	p = p*p; p = p*p; p = p*p;
 	return pow( p.x + p.y, 1.0/8.0 );
 }
+
+
 //////////////////////
 //  Primitives SDF  //
 //////////////////////
@@ -120,37 +123,6 @@ float UD_RoundBox(vec3 p, vec3 size, float r)
 {
     return length(max(abs(p) - size, 0.0)) - r;
 }
-////////////////
-//  Fractals  //
-////////////////
-float SD_MandelBulb(vec3 p, float Power, int Iterations, float Bailout)
-{
-	vec3 z = p;
-	float dr = 1.0;
-	float r = 0.0;
-	for (int i = 0; i < Iterations ; i++) {
-		r = length(z);
-		if (r>Bailout) break;
-		
-		// convert to polar coordinates
-		/*float theta = acos(z.z/r);
-		float phi = atan(z.y,z.x);*/
-		float theta = asin( z.z/r );
-		float phi = atan( z.y,z.x );
-		dr =  pow( r, Power-1.0)*Power*dr + 1.0;
-		
-		// scale and rotate the point
-		float zr = pow( r,Power);
-		theta = theta*Power;
-		phi = phi*Power;
-		
-		// convert back to cartesian coordinates
-		z = zr*vec3( cos(theta)*cos(phi), cos(theta)*sin(phi), sin(theta) );
-		//z = zr*vec3(sin(theta)*cos(phi), sin(phi)*sin(theta), cos(theta));
-		z+=p;
-	}
-	return 0.5*log(r)*r/dr;
-}
 /////////////////
 //  Operators  //
 /////////////////
@@ -198,16 +170,20 @@ vec3 twist(vec3 p)
 /////////////////
 //  Operators  //
 /////////////////
-struct Material
-{
-	float dist;
-	int material;
-};
 float opI(float d1, float d2) { return max(d1, d2); }
 float opU(float d1, float d2) { return min(d1, d2); }
-Material opU(Material d1, Material d2)
+float opU(float d1, int m1, float d2, int m2, out int m)
 {
-    return d1.dist < d2.dist ? d1 : d2;
+    if(d1 < d2) 
+    {
+        m = m1;
+        return d1;
+    }
+    else
+    {
+        m = m2;
+        return d2;
+    }
 }
 float opCombine(float d1, float d2, float r)
 {

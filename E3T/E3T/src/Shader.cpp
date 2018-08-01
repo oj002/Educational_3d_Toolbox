@@ -1,5 +1,8 @@
 #include "Shader.hpp"
+#include <regex>
+#include <experimental\filesystem>
 
+namespace fs = std::experimental::filesystem;
 
 namespace E3T
 {
@@ -13,6 +16,7 @@ namespace E3T
 
 	void Shader::update(const char *filepath)
 	{
+
 		static long long lastTimeModified{ 0 };
 		const long long time{ fs::last_write_time(fs::current_path().append(filepath)).time_since_epoch().count() };
 		if (lastTimeModified < time)
@@ -20,7 +24,7 @@ namespace E3T
 			lastTimeModified = time;
 			GLCall(glDeleteProgram(m_rendererID));
 			m_uniformLocationCache.clear();
-			
+
 			CreateShader(PaseShader(filepath));
 			this->bind();
 		}
@@ -34,47 +38,50 @@ namespace E3T
 			if(libEntry->second.lastWriteTime >= lastWriteTime)
 				return libEntry->second.forward_declare;
 
+		// m_libs.clear();
 
-		m_libs.clear();
 		std::ifstream fin(libPath);
-		std::string lib_str((std::istreambuf_iterator<char>(fin)), std::istreambuf_iterator<char>());
+		if (!fin.is_open())
+		{
+			std::cerr << "Warning: shader lib '" << libPath << "' doesn't exist\n";
+		}
+		std::string lib_str("#version 400 core\n" + std::string((std::istreambuf_iterator<char>(fin)), std::istreambuf_iterator<char>()));
+
+		static std::regex remove_single_line_comments("//.*\n", std::regex::optimize);
+		lib_str = std::regex_replace(lib_str, remove_single_line_comments, "");
 
 		Library lib;
 		lib.lastWriteTime = lastWriteTime;
 		lib.id = CompileShader(GL_FRAGMENT_SHADER, lib_str);
 
-		int brackets = 0;
-		for (std::string::iterator it{ lib_str.begin() }; it != lib_str.end(); ++it)
+		for (std::string::const_iterator it{ lib_str.begin() }; it != lib_str.end(); ++it)
 		{
 			switch (*it)
 			{
-			case '/':
-			{
-				switch (*++it)
-				{
-				case '/': while (*++it != '\n') {} break;
-				case '*':
-					while (true)
-						if (*++it == '*') 
-							if (*++it == '/')
-								break;
-				break;
-				default: --it; break;
-				}
-			}
 			case '\n': case '\r': case '\v': break;
-			case '{': ++brackets; break;
-			case '}':
-				--brackets;
-				if (brackets == 0) lib.forward_declare += ';';
-				else if (brackets < 0) std::cerr << "Unopened braked closed!" << std::endl;
-				break;
-			case '#': 
-				std::cerr << "You can't use preprocessor directives in lib file" << std::endl;
-				break;
+			case '#': while(*++it != '\n') {} break;
+			case ')':
+				lib.forward_declare += ')';
+				do {
+					if (*++it == '{') {
+						int brackets{ 1 };
+						while (brackets != 0) {
+							switch (*++it)
+							{
+							case '{': ++brackets; break;
+							case '}':
+								--brackets;
+								if (brackets == 0) lib.forward_declare += ';';
+								else if (brackets < 0) std::cerr << "Unopened braked closed!" << std::endl;
+								break;
+							}
+						}
+						++it; break;// So the -- at the end gets negated
+					}
+				} while (isspace(*it) || *it == '\n');
+				--it; break;
 			default:
-				if (brackets < 1) lib.forward_declare += *it;
-				break;
+				lib.forward_declare += *it; break;
 			}
 		}
 
@@ -90,9 +97,8 @@ namespace E3T
 		{
 			std::cerr << "Warning: shader '" << filePath << "' doesn't exist\n";
 		}
-
+		std::string shader("#version 400 core\n");
 		std::string line;
-		std::stringstream ss;
 		while (std::getline(fin, line))
 		{
 			size_t index{ line.find("#import") };
@@ -101,14 +107,14 @@ namespace E3T
 				const size_t open{ line.find('"', index) + 1 };
 				std::string libName{ line.substr(open, line.find('"', open) - open) };
 
-				ss << PaseLib(libName.c_str()) << '\n';
+				shader += PaseLib(libName.c_str()) + '\n';
 			}
 			else
 			{
-				ss << line << '\n';
+				shader += line + '\n';
 			}
 		}
-		return ss.str();
+		return shader;
 	}
 
 	unsigned int Shader::CompileShader(unsigned int type, const std::string & sourc)
@@ -138,7 +144,6 @@ namespace E3T
 	{
 		const unsigned int fs{ CompileShader(GL_FRAGMENT_SHADER, fragmentShader) };
 		GLCall(m_rendererID = glCreateProgram());
-
 
 		GLCall(glAttachShader(m_rendererID, m_vs));
 		for (const auto &it : m_libs)

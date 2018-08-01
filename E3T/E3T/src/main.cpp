@@ -16,7 +16,7 @@ int main()
 
 
 	GLFWwindow* pWindow{ E3T::createWindow(width, height, "G3T") };
-	//glfwSetInputMode(pWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	glfwSetInputMode(pWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 	glfwMakeContextCurrent(pWindow);
 	glfwSetWindowSizeCallback(pWindow, window_size_callback);
 	glfwSetCursorPosCallback(pWindow, mouse_callback);
@@ -66,18 +66,34 @@ int main()
 
 		GLCall(glClear(GL_COLOR_BUFFER_BIT));
 
-		shader.setVec3("camUp", cam.up);
-		shader.setVec3("camRight", cam.right);
-		shader.setVec3("eye", cam.position);
-		shader.setFloat("time", timer.getElapsedTime<float>());
-		shader.setFloat("dt", dt);
-		shader.setVec2("resolution", { width, height });
+		shader.update("main.glsl");
+		shader.setVec3("u_camUp", cam.up);
+		shader.setVec3("u_camRight", cam.right);
+		shader.setVec3("u_eye", cam.position);
+		shader.setFloat("u_time", timer.getElapsedTime<float>());
+		shader.setFloat("u_dt", dt);
+		shader.setVec2("u_resolution", { width, height });
 		glDrawArrays(GL_TRIANGLES, 0, 3);
 
 
 
+		ImGuiWindowFlags window_flags = 0;
+		window_flags |= ImGuiWindowFlags_NoMove;
+		window_flags |= ImGuiWindowFlags_AlwaysAutoResize;
+		bool open{ true };
+		
+		ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_Appearing);
+		if (!ImGui::Begin("E3T-Uniforms", &open, window_flags))
+		{
+			ImGui::End();
+			// Early out if the window is collapsed, as an optimization.
+		}
+		else
+		{
+			ImGui::Text("Application average:\n%.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+			ImGui::End();
+		}
 
-		ImGui::ShowDemoWindow();
 
 		ImGui::Render();
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
@@ -85,7 +101,6 @@ int main()
 		glfwSwapBuffers(pWindow);
 		processInput(pWindow);
 		glfwPollEvents();
-		shader.update("main.glsl");
 	}
 }
 
@@ -99,14 +114,15 @@ void processInput(GLFWwindow *pWindow)
 	{
 		glfwSetWindowShouldClose(pWindow, true);
 	}
-	static bool pressed = false;
+	static bool F11_pressed = false;
 	if (glfwGetKey(pWindow, GLFW_KEY_F11) == GLFW_PRESS)
 	{
-		pressed = true;
+
+		F11_pressed = true;
 	}
-	if (glfwGetKey(pWindow, GLFW_KEY_F11) == GLFW_RELEASE && pressed)
+	if (glfwGetKey(pWindow, GLFW_KEY_F11) == GLFW_RELEASE && F11_pressed)
 	{
-		pressed = false;
+		F11_pressed = false;
 		static int old_width = width, old_height = height;
 		static int old_xPos = 0, old_yPos = 0, old_refreshRate = 0;
 		if (glfwGetWindowMonitor(pWindow) == nullptr)
@@ -124,6 +140,8 @@ void processInput(GLFWwindow *pWindow)
 			glfwSetWindowMonitor(pWindow, nullptr, old_xPos, old_yPos, width, height, NULL);
 		}
 	}
+
+	glfwSetInputMode(pWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 	if (glfwGetKey(pWindow, GLFW_KEY_W) == GLFW_PRESS)
 	{
 		cam.processKeyboard(CamMovement::FORWARD, dt);
@@ -140,9 +158,17 @@ void processInput(GLFWwindow *pWindow)
 	{
 		cam.processKeyboard(CamMovement::LEFT, dt);
 	}
+	if (glfwGetKey(pWindow, GLFW_KEY_KP_ADD) == GLFW_PRESS)
+	{
+		cam.movementSpeed *= 1.1;
+	}
+	if (glfwGetKey(pWindow, GLFW_KEY_KP_SUBTRACT) == GLFW_PRESS)
+	{
+		cam.movementSpeed *= 0.9;
+	}
 }
-float lastX = 800.0f / 2.0f;
-float lastY = 600.0f / 2.0f;
+float lastX = width / 2.0f;
+float lastY = height / 2.0f;
 bool firstMouse = true;
 void mouse_callback(GLFWwindow *window, double xpos, double ypos)
 {

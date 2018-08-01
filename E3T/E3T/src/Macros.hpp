@@ -1,6 +1,24 @@
 #pragma once
 #include <iostream>
 #include <string>
+#include <chrono>
+#include <algorithm>
+
+struct Timer
+{
+	std::chrono::time_point<std::chrono::steady_clock> start, end;
+	std::chrono::duration<float> duration;
+	Timer()
+		: start(std::chrono::high_resolution_clock::now())
+	{}
+	~Timer()
+	{
+		end = std::chrono::high_resolution_clock::now();
+		duration = end - start;
+		float ms = duration.count() * 1000.0f;
+		std::cout << "Timer took " << ms << "ms" << std::endl;
+	}
+};
 
 #define FATA_ERROR(errorMsg) std::cerr << "[Error] (" << errorMsg << "):\n" << __FILE__ << ':' << __LINE__ << std::endl; std::exit(-1)
 
