@@ -27,7 +27,6 @@ namespace E3T
 		ImGui::CreateContext();
 		ImGui_ImplGlfw_InitForOpenGL(pWindow, true);
 		ImGui_ImplOpenGL3_Init();
-		ImGui::StyleColorsDark();
 	}
 	GLFWwindow* createWindow(int width, int height, const char *name) noexcept
 	{

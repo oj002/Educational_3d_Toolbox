@@ -1,6 +1,7 @@
 #include "Core.hpp"
 
 int width = 800, height = 600;
+bool E3T_wnd_open{ false };
 
 Cam cam(glm::vec3(0.0f, 0.0f, 3.0f));
 float dt = 0.0f;
@@ -9,14 +10,19 @@ void processInput(GLFWwindow *pWindow);
 void mouse_callback(GLFWwindow * window, double xpos, double ypos);
 void window_size_callback(GLFWwindow* window, int w, int h) noexcept;
 
+struct point
+{
+	point(double x, double y, std::string name) : coord(x,y), name(name) {}
+	glm::vec2 coord;
+	std::string name;
+};
+
 int main()
-{
-{
+{{
 	E3T::init_glfw();
 
 
-	GLFWwindow* pWindow{ E3T::createWindow(width, height, "G3T") };
-	glfwSetInputMode(pWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	GLFWwindow* pWindow{ E3T::createWindow(width, height, "E3T") };
 	glfwMakeContextCurrent(pWindow);
 	glfwSetWindowSizeCallback(pWindow, window_size_callback);
 	glfwSetCursorPosCallback(pWindow, mouse_callback);
@@ -66,6 +72,7 @@ int main()
 
 		GLCall(glClear(GL_COLOR_BUFFER_BIT));
 
+
 		shader.update("main.glsl");
 		shader.setVec3("u_camUp", cam.up);
 		shader.setVec3("u_camRight", cam.right);
@@ -80,16 +87,33 @@ int main()
 		ImGuiWindowFlags window_flags = 0;
 		window_flags |= ImGuiWindowFlags_NoMove;
 		window_flags |= ImGuiWindowFlags_AlwaysAutoResize;
-		bool open{ true };
-		
+
 		ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_Appearing);
-		if (!ImGui::Begin("E3T-Uniforms", &open, window_flags))
+		ImGui::SetNextWindowCollapsed(!E3T_wnd_open);
+		bool open{ E3T_wnd_open };
+		if (!ImGui::Begin("E3T", &open, window_flags))
 		{
+			E3T_wnd_open = false;
+			glfwSetInputMode(pWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 			ImGui::End();
 			// Early out if the window is collapsed, as an optimization.
 		}
 		else
 		{
+			E3T_wnd_open = true;
+			glfwSetInputMode(pWindow, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+			
+			shader.render_uniforms();
+
+			static bool styleEditor{ false };
+			ImGui::Checkbox("Style Editor", &styleEditor);
+			if (styleEditor)
+			{
+				if (ImGui::Begin("Style Editor")) {
+					ImGui::ShowStyleEditor();
+				}
+				ImGui::End();
+			}
 			ImGui::Text("Application average:\n%.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 			ImGui::End();
 		}
@@ -110,6 +134,16 @@ int main()
 
 void processInput(GLFWwindow *pWindow)
 {
+	static bool space_pressed = false;
+	if (glfwGetKey(pWindow, GLFW_KEY_SPACE) == GLFW_PRESS)
+	{
+		space_pressed = true;
+	}
+	if (glfwGetKey(pWindow, GLFW_KEY_SPACE) == GLFW_RELEASE && space_pressed)
+	{
+		space_pressed = false;
+		E3T_wnd_open = E3T_wnd_open ? false : true;
+	}
 	if (glfwGetKey(pWindow, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 	{
 		glfwSetWindowShouldClose(pWindow, true);
@@ -117,7 +151,6 @@ void processInput(GLFWwindow *pWindow)
 	static bool F11_pressed = false;
 	if (glfwGetKey(pWindow, GLFW_KEY_F11) == GLFW_PRESS)
 	{
-
 		F11_pressed = true;
 	}
 	if (glfwGetKey(pWindow, GLFW_KEY_F11) == GLFW_RELEASE && F11_pressed)
@@ -140,8 +173,6 @@ void processInput(GLFWwindow *pWindow)
 			glfwSetWindowMonitor(pWindow, nullptr, old_xPos, old_yPos, width, height, NULL);
 		}
 	}
-
-	glfwSetInputMode(pWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 	if (glfwGetKey(pWindow, GLFW_KEY_W) == GLFW_PRESS)
 	{
 		cam.processKeyboard(CamMovement::FORWARD, dt);
@@ -160,11 +191,11 @@ void processInput(GLFWwindow *pWindow)
 	}
 	if (glfwGetKey(pWindow, GLFW_KEY_KP_ADD) == GLFW_PRESS)
 	{
-		cam.movementSpeed *= 1.1;
+		cam.movementSpeed *= 1.1f;
 	}
 	if (glfwGetKey(pWindow, GLFW_KEY_KP_SUBTRACT) == GLFW_PRESS)
 	{
-		cam.movementSpeed *= 0.9;
+		cam.movementSpeed *= 0.9f;
 	}
 }
 float lastX = width / 2.0f;
@@ -172,20 +203,23 @@ float lastY = height / 2.0f;
 bool firstMouse = true;
 void mouse_callback(GLFWwindow *window, double xpos, double ypos)
 {
-	if (firstMouse)
+	if (!E3T_wnd_open)
 	{
-		lastX = static_cast<float>(xpos);
-		lastY = static_cast<float>(ypos);
-		firstMouse = false;
+		if (firstMouse)
+		{
+			lastX = static_cast<float>(xpos);
+			lastY = static_cast<float>(ypos);
+			firstMouse = false;
+		}
+
+		const float xoffset = static_cast<float>(xpos) - lastX;
+		const float yoffset = lastY - static_cast<float>(ypos);
+
+		lastX = (static_cast<float>(xpos));
+		lastY = (static_cast<float>(ypos));
+
+		cam.processMouseMovement(xoffset, yoffset);
 	}
-
-	const float xoffset = static_cast<float>(xpos) - lastX;
-	const float yoffset = lastY - static_cast<float>(ypos);
-
-	lastX = (static_cast<float>(xpos));
-	lastY = (static_cast<float>(ypos));
-
-	cam.processMouseMovement(xoffset, yoffset);
 }
 void window_size_callback(GLFWwindow* window, int w, int h) noexcept
 {

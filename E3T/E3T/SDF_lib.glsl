@@ -128,7 +128,7 @@ float SD_MandelBulb(vec3 p, float Power, int Iterations, float Bailout)
 	vec3 z = p;
 	float dr = 1.0;
 	float r = 0.0;
-	for (int i = 0; i < Iterations ; i++) {
+	for (int i = 0; i < Iterations; ++i) {
 		r = length(z);
 		if (r>Bailout) break;
 		
@@ -198,38 +198,10 @@ vec3 twist(vec3 p)
 /////////////////
 //  Operators  //
 /////////////////
-struct Material
-{
-	float dist;
-	int material;
-};
 float opI(float d1, float d2) { return max(d1, d2); }
 float opU(float d1, float d2) { return min(d1, d2); }
-Material opU(Material d1, Material d2)
+vec4 opU(vec4 d1, vec4 d2)
 {
-    return d1.dist < d2.dist ? d1 : d2;
-}
-float opCombine(float d1, float d2, float r)
-{
-    float minimum = min(d1, d2);
-    if((d1 < r) && (d2 < r))
-    {
-        return min(minimum, r - sqrt((r-d1)*(r-d1) + (r-d2)*(r-d2)));
-    }
-    else {
-        return minimum;
-    }
-}
-float opCombine(float d1, int m1, float d2, int m2, out int m, float r)
-{
-    m = (d1  < d2 ? m1 : m2);
-    float minimum = min(d1, d2);
-    if((d1 < r) && (d2 < r))
-    {
-        return min(minimum, r - sqrt((r-d1)*(r-d1) + (r-d2)*(r-d2)));
-    }
-    else {
-        return minimum;
-    }
+    return d1.x < d2.x ? d1 : d2;
 }
 float opD(float d1, float d2) { return max(d1, -d2); }
